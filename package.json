@@ -1,0 +1,25 @@
+{
+  "name": "mathscape",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop-first advanced math visualization and solution-authoring tool.",
+  "type": "module",
+  "workspaces": [
+    "apps/desktop",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @mathscape/desktop",
+    "build": "npm run build -w @mathscape/desktop",
+    "check": "npm run check -w @mathscape/desktop",
+    "test": "npm run test -w @mathscape/desktop",
+    "visual-check": "node scripts/visual-check.mjs",
+    "tauri": "npm run tauri -w @mathscape/desktop"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

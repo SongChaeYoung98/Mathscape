@@ -1,0 +1,12 @@
+node_modules/
+target/
+dist/
+build/
+.svelte-kit/
+artifacts/
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.tmp
