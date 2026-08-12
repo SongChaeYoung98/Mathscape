@@ -1230,7 +1230,6 @@
         <span class={`expression-status ${graphEquationStatus.ok ? 'expression-status-ok' : 'expression-status-error'}`}>
           {selectedPanel === '3D' ? `3D surface: ${surfaceExpressionStatus.message}` : `2D graph: ${expressionStatus.message}`}
         </span>
-        <code>2D: a*cos(b*x+phi). 3D: z(x,y)=A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)</code>
       </div>
       <div class="formula-card">
         <span class="formula-label">Display formula LaTeX</span>
@@ -1285,7 +1284,6 @@
         >
           {surfaceExpressionStatus.message}
         </span>
-        <code>Use x, y, r, a/A, b/k, phi, R, sigma, M, epsilon</code>
       </div>
     </div>
 
