@@ -313,6 +313,20 @@
     projectStatus = `Added solution step at ${at.toFixed(2)}s`;
   }
 
+  function deleteDerivationStep(stepId: string) {
+    if (activeScene.derivationSteps.length <= 1) {
+      projectStatus = 'Keep at least one solution step';
+      return;
+    }
+
+    const removedStep = activeScene.derivationSteps.find((step) => step.id === stepId);
+    project = updateActiveScene(project, (scene) => ({
+      ...scene,
+      derivationSteps: scene.derivationSteps.filter((step) => step.id !== stepId)
+    }));
+    projectStatus = `Deleted solution step ${removedStep?.label ?? ''}`.trim();
+  }
+
   function markerWithPercent(marker: TimelineMarker, durationSeconds: number): TimelineMarker {
     return {
       ...marker,
@@ -1219,6 +1233,14 @@
                 value={step.timeSeconds}
                 on:input={(event) => setDerivationStepTime(step.id, Number(event.currentTarget.value))}
               />
+              <button
+                class="danger-action"
+                aria-label={`Delete solution step ${step.label}`}
+                disabled={activeScene.derivationSteps.length <= 1}
+                on:click={() => deleteDerivationStep(step.id)}
+              >
+                Delete
+              </button>
             </div>
             <input
               aria-label={`Solution step ${step.label} LaTeX`}
@@ -2091,7 +2113,7 @@
 
   .step-editor-head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 72px;
+    grid-template-columns: minmax(0, 1fr) 72px 70px;
     gap: 7px;
   }
 
@@ -2110,6 +2132,22 @@
     min-height: 54px;
     line-height: 1.35;
     resize: vertical;
+  }
+
+  .danger-action {
+    min-height: 32px;
+    padding: 0 10px;
+    color: #ffddd2;
+    background: #3b1f26;
+    border-color: #8d3f4d;
+    font-size: 12px;
+  }
+
+  .danger-action:disabled {
+    cursor: not-allowed;
+    color: #6f7d8a;
+    background: #161f28;
+    border-color: #2b3948;
   }
 
   .template-list button,

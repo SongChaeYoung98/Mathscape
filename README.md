@@ -64,7 +64,7 @@ npm run tauri dev
 - Project-level export settings for resolution, frame count, and FPS, shared by PNG sequence and native MP4 frame rendering
 - Inspector-side 2D export frame preview that reflects the current playhead, overlay layout, annotations, and export aspect ratio
 - Timed derivation steps for creator scripts, with LaTeX-rendered solution cards linked to the animation timeline
-- Editable solution-step authoring for timeline time, step label, LaTeX, narration notes, and add-at-playhead workflows
+- Editable solution-step authoring for timeline time, step label, LaTeX, narration notes, add-at-playhead, and delete workflows
 - Editable scene duration and timeline markers, with marker positions recomputed from timeline seconds for export-safe timing
 - Scene-level 2D visual styling for color map, line weight, and axes visibility, shared by live canvas and export frames
 - Scene-level 3D render-mode and styling controls for surfaces/curves, smooth/wireframe rendering, orbit speed, height scale, and mesh density

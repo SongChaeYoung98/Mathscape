@@ -222,6 +222,8 @@ async function main() {
         .waitFor();
       await page.getByRole('button', { name: 'Add solution step' }).click();
       await page.getByText('Added solution step').waitFor();
+      await page.getByRole('button', { name: 'Delete solution step Step 4' }).click();
+      await page.getByText('Deleted solution step Step 4').waitFor();
       await page.locator('input[aria-label="Keyframe Fundamental amplitude"]').fill('2.35');
       await page.locator('select[aria-label="Keyframe Fundamental easing"]').selectOption('ease-in-out');
       await page.getByRole('button', { name: 'Capture parameter keyframe' }).click();
@@ -287,8 +289,8 @@ async function main() {
       if (Math.abs(resolutionStep?.timeSeconds - 6.8) > 0.001 || resolutionStep?.latex !== 'S_N(x)\\\\to f(x)') {
         throw new Error(`${viewport.name} edited solution step timing or LaTeX was not saved`);
       }
-      if (!editedSteps.some((step) => step.label === 'Step 4')) {
-        throw new Error(`${viewport.name} added solution step was not saved`);
+      if (editedSteps.some((step) => step.label === 'Step 4')) {
+        throw new Error(`${viewport.name} deleted solution step was saved unexpectedly`);
       }
       const editedKeyframes = editedProject.scenes[0].parameterKeyframes;
       const fundamentalKeyframe = editedKeyframes.find((keyframe) => keyframe.id === 'fourier-start');

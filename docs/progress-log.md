@@ -11,6 +11,7 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Desktop-first SvelteKit/Tauri workspace is scaffolded.
 - The first screen is the actual authoring workspace, not a landing page.
 - Project model supports versioned JSON project files, localStorage autosave, scene templates, export settings, overlays, timeline markers, derivation steps, parameter keyframes, and camera keyframes.
+- Solution-step editing supports timeline time, label, LaTeX, narration notes, add-at-playhead, and delete workflows.
 - Native Tauri command layer includes SQLite-backed project library hooks and FFmpeg export bridge hooks.
 - 2D rendering supports sine, Fourier square-wave preview, editable expression plots, parametric curves, vector fields with trajectory tracing, and linear-transform grids with basis vectors and eigen-direction guides.
 - 3D rendering supports Three.js surface plots and 3D parametric curve rendering via a surface/curve render-mode switch.
@@ -81,6 +82,12 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Complex uses the complex-domain offscreen renderer.
 - 3D advances the playhead and captures the live Three.js/WebGL canvas at the configured export resolution.
 - The actual FFmpeg encode still requires the Tauri app plus FFmpeg in PATH.
+
+### Solution Step Deletion
+
+- Added a per-step delete action in the solution-step editor.
+- Kept a one-step minimum guard so overlays and export frame selection always have a fallback derivation step.
+- Added visual-check coverage that adds, deletes, and verifies the removed step is not saved.
 
 ## Verified Commands
 
