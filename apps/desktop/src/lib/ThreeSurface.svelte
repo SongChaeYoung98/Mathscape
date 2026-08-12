@@ -25,6 +25,14 @@
   let reference: THREE.Group | undefined;
   let frame = 0;
   let resizeObserver: ResizeObserver;
+  let isPointerDown = false;
+  let pointerMode: 'orbit' | 'pan' = 'orbit';
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let orbitThetaOffset = 0;
+  let orbitPhiOffset = 0;
+  let zoomScale = 1;
+  let panOffset = new THREE.Vector3();
   const dispatch = createEventDispatcher<{ ready: HTMLCanvasElement }>();
 
   function surfacePalette(colorMap: ColorMap) {
@@ -285,10 +293,80 @@
 
   function applyCameraPose() {
     if (!camera || !cameraPose) return;
-    camera.position.set(cameraPose.position[0], cameraPose.position[1], cameraPose.position[2]);
+    const basePosition = new THREE.Vector3(cameraPose.position[0], cameraPose.position[1], cameraPose.position[2]);
+    const baseTarget = new THREE.Vector3(cameraPose.target[0], cameraPose.target[1], cameraPose.target[2]);
+    const offset = basePosition.clone().sub(baseTarget);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.theta += orbitThetaOffset;
+    spherical.phi = THREE.MathUtils.clamp(spherical.phi + orbitPhiOffset, 0.12, Math.PI - 0.12);
+    spherical.radius = THREE.MathUtils.clamp(spherical.radius * zoomScale, 1.4, 32);
+    const target = baseTarget.clone().add(panOffset);
+
+    camera.position.copy(target).add(new THREE.Vector3().setFromSpherical(spherical));
     camera.fov = cameraPose.fovDegrees;
-    camera.lookAt(cameraPose.target[0], cameraPose.target[1], cameraPose.target[2]);
+    camera.lookAt(target);
     camera.updateProjectionMatrix();
+  }
+
+  function handlePointerDown(event: PointerEvent) {
+    if (!host) return;
+    isPointerDown = true;
+    pointerMode = event.shiftKey || event.button === 2 ? 'pan' : 'orbit';
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    host.setPointerCapture(event.pointerId);
+  }
+
+  function handlePointerMove(event: PointerEvent) {
+    if (!isPointerDown) return;
+    const deltaX = event.clientX - lastPointerX;
+    const deltaY = event.clientY - lastPointerY;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+
+    if (pointerMode === 'pan') {
+      panCamera(deltaX, deltaY);
+      return;
+    }
+
+    orbitThetaOffset -= deltaX * 0.006;
+    orbitPhiOffset -= deltaY * 0.006;
+  }
+
+  function handlePointerUp(event: PointerEvent) {
+    isPointerDown = false;
+    host?.releasePointerCapture(event.pointerId);
+  }
+
+  function handleWheel(event: WheelEvent) {
+    event.preventDefault();
+    zoomScale = THREE.MathUtils.clamp(zoomScale * (event.deltaY > 0 ? 1.08 : 0.92), 0.22, 3.8);
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+  }
+
+  function panCamera(deltaX: number, deltaY: number) {
+    if (!camera || !host) return;
+    const rect = host.getBoundingClientRect();
+    const distance = camera.position.distanceTo(new THREE.Vector3(cameraPose.target[0], cameraPose.target[1], cameraPose.target[2]));
+    const panSpeed = distance / Math.max(320, Math.min(rect.width, rect.height));
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+
+    camera.getWorldDirection(up);
+    right.crossVectors(up, camera.up).normalize();
+    up.crossVectors(right, up).normalize();
+    panOffset.addScaledVector(right, -deltaX * panSpeed);
+    panOffset.addScaledVector(up, deltaY * panSpeed);
+  }
+
+  function resetView() {
+    orbitThetaOffset = 0;
+    orbitPhiOffset = 0;
+    zoomScale = 1;
+    panOffset = new THREE.Vector3();
   }
 
   $: if (scene) {
@@ -356,14 +434,29 @@
   });
 </script>
 
-<div class="three-host" bind:this={host} aria-label="3D radial sine surface preview"></div>
+<div
+  class="three-host"
+  bind:this={host}
+  role="application"
+  aria-label="3D radial sine surface preview"
+  on:pointerdown={handlePointerDown}
+  on:pointermove={handlePointerMove}
+  on:pointerup={handlePointerUp}
+  on:pointercancel={handlePointerUp}
+  on:wheel={handleWheel}
+  on:contextmenu={handleContextMenu}
+>
+  <button class="view-reset" aria-label="Reset 3D view" on:click={resetView}>Reset view</button>
+</div>
 
 <style>
   .three-host {
+    position: relative;
     width: 100%;
     height: 100%;
     min-height: 320px;
     overflow: hidden;
+    touch-action: none;
     background: #0f1419;
     border: 1px solid #2d3a47;
     border-radius: 8px;
@@ -373,5 +466,18 @@
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  .view-reset {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    min-height: 30px;
+    padding: 0 10px;
+    color: #edf2f4;
+    background: rgba(15, 20, 25, 0.72);
+    border: 1px solid rgba(143, 188, 230, 0.54);
+    border-radius: 6px;
+    font-size: 12px;
   }
 </style>

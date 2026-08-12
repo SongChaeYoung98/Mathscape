@@ -449,6 +449,31 @@ async function main() {
       if (surfaceSignature.length < 12000) {
         throw new Error(`${viewport.name} 3D surface appears blank or under-rendered`);
       }
+      const surfaceBox = await page.locator('.three-host canvas').boundingBox();
+      if (!surfaceBox) {
+        throw new Error(`${viewport.name} 3D surface canvas did not expose a bounding box`);
+      }
+      await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.5, surfaceBox.y + surfaceBox.height * 0.5);
+      await page.mouse.down();
+      await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.72, surfaceBox.y + surfaceBox.height * 0.36);
+      await page.mouse.up();
+      await page.waitForTimeout(250);
+      const orbitedSurfaceSignature = await canvasDataUrlSignature(page, '.three-host canvas');
+      if (surfaceSignature.checksum === orbitedSurfaceSignature.checksum) {
+        throw new Error(`${viewport.name} 3D orbit drag did not affect the render`);
+      }
+      await page.mouse.wheel(0, -500);
+      await page.waitForTimeout(250);
+      const zoomedSurfaceSignature = await canvasDataUrlSignature(page, '.three-host canvas');
+      if (orbitedSurfaceSignature.checksum === zoomedSurfaceSignature.checksum) {
+        throw new Error(`${viewport.name} 3D wheel zoom did not affect the render`);
+      }
+      await page.getByRole('button', { name: 'Reset 3D view' }).click();
+      await page.waitForTimeout(250);
+      const resetSurfaceSignature = await canvasDataUrlSignature(page, '.three-host canvas');
+      if (resetSurfaceSignature.checksum === zoomedSurfaceSignature.checksum) {
+        throw new Error(`${viewport.name} 3D reset view did not affect the render`);
+      }
       await page.locator('select[aria-label="2D color map"]').selectOption('viridis');
       await page.waitForTimeout(500);
       const recoloredSurfaceSignature = await canvasDataUrlSignature(page, '.three-host canvas');
