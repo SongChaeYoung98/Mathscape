@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileExpression, validateExpression } from './expression';
+import { compileExpression, validateExpression, validateSurfaceExpression } from './expression';
 import type { MathscapeParameters } from './project';
 
 const parameters: MathscapeParameters = {
@@ -10,6 +10,10 @@ const parameters: MathscapeParameters = {
 
 function evaluate(expression: string, x: number) {
   return compileExpression(expression)(x, parameters);
+}
+
+function evaluateSurface(expression: string, x: number, y: number) {
+  return compileExpression(expression)(x, parameters, y);
 }
 
 describe('compileExpression', () => {
@@ -29,11 +33,34 @@ describe('compileExpression', () => {
     expect(evaluate(' 1e-3 * x + 2 ', 500)).toBeCloseTo(2.5);
   });
 
+  it('evaluates 3D surface variables and black-hole halo constants', () => {
+    const value = evaluateSurface(
+      'A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)',
+      1.6,
+      0.8
+    );
+
+    expect(Number.isFinite(value)).toBe(true);
+  });
+
   it('throws clear errors for malformed or unsupported expressions', () => {
     expect(() => evaluate('a*', 0)).toThrow('Missing operand');
     expect(() => evaluate('sin(', 0)).toThrow('Mismatched parentheses');
     expect(() => evaluate('theta + x', 1)).toThrow('Unknown variable: theta');
     expect(() => evaluate('x @ 2', 1)).toThrow('Unexpected character: @');
+  });
+});
+
+describe('validateSurfaceExpression', () => {
+  it('accepts finite 3D expressions over a sample grid', () => {
+    expect(validateSurfaceExpression('z(x,y)=a*sin(b*sqrt(x^2+y^2)+phi)')).toEqual({
+      ok: true,
+      message: '3D expression OK'
+    });
+  });
+
+  it('rejects malformed 3D expressions', () => {
+    expect(validateSurfaceExpression('A*')).toEqual({ ok: false, message: 'Missing operand' });
   });
 });
 

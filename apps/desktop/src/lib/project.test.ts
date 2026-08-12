@@ -40,6 +40,7 @@ describe('normalizeProject', () => {
     const scene = normalized.scenes[0];
     expect(scene.id).toBe('legacy');
     expect(scene.expression).toBe('a*sin(b*x+phi)');
+    expect(scene.surfaceExpression).toBe('a*sin(b*sqrt(x^2+y^2)+phi)*exp(-sqrt(x^2+y^2)*0.18)');
     expect(scene.plotMode).toBe('sine');
     expect(scene.complexMode).toBe('quadratic');
     expect(scene.parameters).toEqual({ amplitude: 2, frequency: 1, phase: 0 });

@@ -124,6 +124,9 @@ async function main() {
       if (typeof project.scenes[0].expression !== 'string' || project.scenes[0].expression.length === 0) {
         throw new Error(`${viewport.name} downloaded project is missing editable expression`);
       }
+      if (typeof project.scenes[0].surfaceExpression !== 'string' || project.scenes[0].surfaceExpression.length === 0) {
+        throw new Error(`${viewport.name} downloaded project is missing editable 3D surface expression`);
+      }
       if (
         project.scenes[0].visual?.colorMap !== 'studio-blue' ||
         project.scenes[0].visual?.lineWeight !== 2.5 ||
@@ -332,7 +335,7 @@ async function main() {
       await page.locator('input[aria-label="2D expression"]').fill('a*');
       await page.getByText('Missing operand').waitFor();
       await page.locator('input[aria-label="2D expression"]').fill('a*cos(b*x+phi)');
-      await page.getByText('Expression OK').waitFor();
+      await page.getByText('Expression OK', { exact: true }).waitFor();
       await page.waitForTimeout(300);
       const afterExpression = await canvasChecksum(page, 'canvas[aria-label="2D sine graph preview"]');
       if (beforeExpression === afterExpression) {
@@ -346,6 +349,30 @@ async function main() {
       if (!snapshot.suggestedFilename().endsWith('.png')) {
         throw new Error(`${viewport.name} snapshot export did not create a PNG`);
       }
+      await page.getByRole('button', { name: 'Load black hole halo 3D equation' }).click();
+      await page.getByText('Black hole halo 3D equation loaded').waitFor();
+      await page.getByText('3D expression OK').waitFor();
+      await page.locator('.three-host canvas').waitFor();
+      await page.waitForTimeout(500);
+      const haloSignature = await canvasDataUrlSignature(page, '.three-host canvas');
+      if (haloSignature.length < 12000) {
+        throw new Error(`${viewport.name} black-hole halo surface appears blank or under-rendered`);
+      }
+      const haloDownloadPromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      const haloDownload = await haloDownloadPromise;
+      const haloProjectPath = await haloDownload.path();
+      if (!haloProjectPath) {
+        throw new Error(`${viewport.name} black-hole halo project download did not produce a file`);
+      }
+      const haloProject = JSON.parse(await readFile(haloProjectPath, 'utf8'));
+      if (!haloProject.scenes[0].surfaceExpression.includes('sqrt(x^2+y^2)-R')) {
+        throw new Error(`${viewport.name} black-hole halo expression was not saved`);
+      }
+      if (haloProject.scenes[0].visual?.threeMode !== 'surface') {
+        throw new Error(`${viewport.name} black-hole halo did not switch to 3D surface mode`);
+      }
+      await page.getByRole('button', { name: '2D' }).click();
       const beforePlayback = await canvasChecksum(page, 'canvas[aria-label="2D sine graph preview"]');
 
       await page.getByRole('button', { name: 'Toggle timeline playback' }).click();

@@ -38,6 +38,8 @@ npm run tauri dev
 - Rust workspace layout
 - `math-core` crate with expression and sampling primitives
 - Three.js 3D surface and parametric curve viewport
+- Editable 3D surface equation input for `z(x,y)` height fields
+- One-click black-hole halo surface equation starter
 - 3D reference grid and labeled axes with color-map-aware surface/curve materials
 - 3D viewport PNG sequence export from the live WebGL canvas at the configured export resolution
 - Complex domain coloring viewport
@@ -68,6 +70,7 @@ npm run tauri dev
 - Editable scene duration and timeline markers, with marker positions recomputed from timeline seconds for export-safe timing
 - Scene-level 2D visual styling for color map, line weight, and axes visibility, shared by live canvas and export frames
 - Scene-level 3D render-mode and styling controls for surfaces/curves, smooth/wireframe rendering, orbit speed, height scale, and mesh density
+- Inline validation for editable 3D surface expressions with `x`, `y`, `r`, `a/A`, `b/k`, `phi`, `R`, `sigma`, `M`, and `epsilon`
 - Scene-level 2D graph annotations for timeline-aware trace points and tangent-line callouts, shared by live canvas and export frames
 - Inspector-side parameter keyframe editing for timeline-controlled `a`, `b`, and `phi` animation values
 - Inspector-side camera keyframe editing for 3D position, look target, FOV, easing, and capture-at-playhead workflows
@@ -130,6 +133,8 @@ npm run tauri dev
 - 파라미터 슬라이더와 timeline keyframe 애니메이션
 - 2D 함수 그래프, Fourier, parametric curve, vector field, linear transform 렌더러
 - Three.js 기반 3D surface 및 3D helix curve 렌더러
+- `z(x,y)` 입력형 3D surface equation editor
+- black-hole halo 3D equation starter
 - 설정된 export 해상도를 따르는 live WebGL canvas 기반 3D viewport PNG sequence export
 - 복소평면 domain coloring 및 zeta demo
 - zeta critical line overlay와 approximate non-trivial zero marker

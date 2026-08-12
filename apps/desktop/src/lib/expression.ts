@@ -29,7 +29,7 @@ const operators: Record<Operator, { precedence: number; rightAssociative: boolea
   neg: { precedence: 3, rightAssociative: true, arity: 1 }
 };
 
-export type CompiledExpression = (x: number, parameters: MathscapeParameters) => number;
+export type CompiledExpression = (x: number, parameters: MathscapeParameters, y?: number) => number;
 export type ExpressionValidation = { ok: true; message: string } | { ok: false; message: string };
 
 const sampleParameters: MathscapeParameters = {
@@ -39,9 +39,9 @@ const sampleParameters: MathscapeParameters = {
 };
 
 export function compileExpression(expression: string): CompiledExpression {
-  const rpn = toReversePolish(tokenize(expression));
+  const rpn = toReversePolish(tokenize(normalizeExpression(expression)));
 
-  return (x, parameters) => evaluateReversePolish(rpn, x, parameters);
+  return (x, parameters, y = 0) => evaluateReversePolish(rpn, x, parameters, y);
 }
 
 export function validateExpression(expression: string): ExpressionValidation {
@@ -62,6 +62,33 @@ export function validateExpression(expression: string): ExpressionValidation {
   }
 
   return { ok: true, message: 'Expression OK' };
+}
+
+export function validateSurfaceExpression(expression: string): ExpressionValidation {
+  if (expression.trim().length === 0) {
+    return { ok: false, message: '3D expression is empty' };
+  }
+
+  try {
+    const compiled = compileExpression(expression);
+    for (const x of [-1.5, 0, 1.5]) {
+      for (const y of [-1.5, 0, 1.5]) {
+        const value = compiled(x, sampleParameters, y);
+        if (!Number.isFinite(value)) {
+          return { ok: false, message: '3D expression is outside the visible real domain' };
+        }
+      }
+    }
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : 'Invalid 3D expression' };
+  }
+
+  return { ok: true, message: '3D expression OK' };
+}
+
+function normalizeExpression(expression: string): string {
+  const equalsIndex = expression.indexOf('=');
+  return equalsIndex >= 0 ? expression.slice(equalsIndex + 1) : expression;
 }
 
 function tokenize(expression: string): Token[] {
@@ -109,8 +136,9 @@ function tokenize(expression: string): Token[] {
         index += 1;
       }
 
-      const value = expression.slice(start, index).toLowerCase();
-      previous = value in functions ? { type: 'function', value } : { type: 'variable', value };
+      const value = expression.slice(start, index);
+      const lowerValue = value.toLowerCase();
+      previous = lowerValue in functions ? { type: 'function', value: lowerValue } : { type: 'variable', value };
       tokens.push(previous);
       continue;
     }
@@ -201,7 +229,7 @@ function shouldPopOperator(current: Extract<Token, { type: 'operator' }>, top: T
     : currentOperator.precedence <= topOperator.precedence;
 }
 
-function evaluateReversePolish(tokens: Token[], x: number, parameters: MathscapeParameters): number {
+function evaluateReversePolish(tokens: Token[], x: number, parameters: MathscapeParameters, y: number): number {
   const stack: number[] = [];
 
   for (const token of tokens) {
@@ -211,7 +239,7 @@ function evaluateReversePolish(tokens: Token[], x: number, parameters: Mathscape
     }
 
     if (token.type === 'variable') {
-      stack.push(resolveVariable(token.value, x, parameters));
+      stack.push(resolveVariable(token.value, x, y, parameters));
       continue;
     }
 
@@ -243,13 +271,23 @@ function evaluateReversePolish(tokens: Token[], x: number, parameters: Mathscape
   return stack[0];
 }
 
-function resolveVariable(name: string, x: number, parameters: MathscapeParameters): number {
-  if (name === 'x') return x;
-  if (name === 'a') return parameters.amplitude;
-  if (name === 'b') return parameters.frequency;
-  if (name === 'phi') return parameters.phase;
-  if (name === 'pi') return Math.PI;
-  if (name === 'e') return Math.E;
+function resolveVariable(name: string, x: number, y: number, parameters: MathscapeParameters): number {
+  const lowerName = name.toLowerCase();
+  const radius = Math.sqrt(x * x + y * y);
+
+  if (lowerName === 'x') return x;
+  if (lowerName === 'y') return y;
+  if (name === 'r') return radius;
+  if (name === 'R') return 1.8;
+  if (lowerName === 'a') return parameters.amplitude;
+  if (name === 'A') return parameters.amplitude;
+  if (lowerName === 'b' || lowerName === 'k') return parameters.frequency;
+  if (lowerName === 'm') return 0.9;
+  if (lowerName === 'sigma') return 0.42;
+  if (lowerName === 'epsilon') return 0.08;
+  if (lowerName === 'phi') return parameters.phase;
+  if (lowerName === 'pi') return Math.PI;
+  if (lowerName === 'e') return Math.E;
 
   throw new Error(`Unknown variable: ${name}`);
 }

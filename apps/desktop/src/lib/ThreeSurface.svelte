@@ -2,11 +2,13 @@
   import { onDestroy, onMount } from 'svelte';
   import { createEventDispatcher } from 'svelte';
   import * as THREE from 'three';
+  import { compileExpression } from './expression';
   import { defaultSceneVisualSettings, type CameraPose, type ColorMap, type SceneVisualSettings } from './project';
 
   export let amplitude = 1;
   export let frequency = 1;
   export let phase = 0;
+  export let surfaceExpression = 'a*sin(b*sqrt(x^2+y^2)+phi)*exp(-sqrt(x^2+y^2)*0.18)';
   export let visual: SceneVisualSettings = defaultSceneVisualSettings;
   export let cameraPose: CameraPose = {
     position: [5.8, 4.2, 6.4],
@@ -49,7 +51,7 @@
     };
   }
 
-  function heightAt(x: number, z: number) {
+  function fallbackHeightAt(x: number, z: number) {
     const radius = Math.sqrt(x * x + z * z);
     const heightScale = Math.max(0.2, Math.min(3, visual.surfaceHeightScale));
     return heightScale * amplitude * Math.sin(frequency * radius + phase) * Math.exp(-radius * 0.18);
@@ -66,11 +68,21 @@
     const low = -Math.max(0.4, amplitude);
     const high = Math.max(0.4, amplitude);
     const palette = surfacePalette(visual.colorMap);
+    const heightScale = Math.max(0.2, Math.min(3, visual.surfaceHeightScale));
+    const parameters = { amplitude, frequency, phase };
+    let compiledSurface: ReturnType<typeof compileExpression> | undefined;
+
+    try {
+      compiledSurface = compileExpression(surfaceExpression);
+    } catch {
+      compiledSurface = undefined;
+    }
 
     for (let index = 0; index < positions.count; index += 1) {
       const x = positions.getX(index);
       const z = positions.getZ(index);
-      const y = heightAt(x, z);
+      const expressionHeight = compiledSurface?.(x, parameters, z);
+      const y = Number.isFinite(expressionHeight) ? heightScale * (expressionHeight as number) : fallbackHeightAt(x, z);
       positions.setY(index, y);
 
       const t = THREE.MathUtils.clamp((y - low) / (high - low), 0, 1);
@@ -283,6 +295,7 @@
     amplitude;
     frequency;
     phase;
+    surfaceExpression;
     visual.colorMap;
     visual.lineWeight;
     visual.threeMode;

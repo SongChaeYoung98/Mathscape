@@ -25,7 +25,7 @@
     saveProjectToLibrary,
     type ProjectSummary
   } from '$lib/native-projects';
-  import { validateExpression } from '$lib/expression';
+  import { validateExpression, validateSurfaceExpression } from '$lib/expression';
   import {
     createPlotFunction,
     drawLinearTransform,
@@ -83,6 +83,8 @@
     | 'cardScale';
   type OverlaySettingValue = boolean | number | OverlayPosition;
   type AnimationPresetName = 'explain-build-resolve' | 'pulse-and-zoom' | 'slow-orbit';
+  const blackHoleHaloExpression =
+    'A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)';
 
   let canvas: HTMLCanvasElement;
   let threeCanvas: HTMLCanvasElement | undefined;
@@ -127,6 +129,7 @@
         : activeScene.plotMode === 'linear-transform'
           ? { ok: true, message: 'Linear transform mode' }
       : validateExpression(activeScene.expression);
+  $: surfaceExpressionStatus = validateSurfaceExpression(activeScene.surfaceExpression);
   $: exportSettings = project.exportSettings;
 
   function setParameter(name: ParameterName, value: number) {
@@ -679,6 +682,30 @@
     }));
   }
 
+  function setSurfaceExpression(value: string) {
+    selectedPanel = '3D';
+    project = updateActiveScene(project, (scene) => ({
+      ...scene,
+      surfaceExpression: value,
+      visual: {
+        ...scene.visual,
+        threeMode: 'surface'
+      }
+    }));
+  }
+
+  function useBlackHoleHaloExpression() {
+    setSurfaceExpression(blackHoleHaloExpression);
+    project = updateActiveScene(project, (scene) => ({
+      ...scene,
+      name: 'Black hole halo',
+      formulaLatex:
+        'z(x,y)=Ae^{-((\\sqrt{x^2+y^2}-R)^2)/\\sigma^2}\\cos(k\\sqrt{x^2+y^2}+\\phi)-\\frac{M}{\\sqrt{x^2+y^2+\\epsilon}}',
+      nextTransformLatex: 'r=\\sqrt{x^2+y^2},\\quad R=1.8,\\ \\sigma=0.42,\\ M=0.9,\\ \\epsilon=0.08'
+    }));
+    projectStatus = 'Black hole halo 3D equation loaded';
+  }
+
   function setOverlaySetting(name: OverlaySettingName, value: OverlaySettingValue) {
     project = updateActiveScene(project, (scene) => ({
       ...scene,
@@ -1197,6 +1224,27 @@
         </span>
         <code>{activeScene.plotMode === 'expression' ? 'Custom expression mode' : `Template mode: ${activeScene.plotMode}`}</code>
       </div>
+      <div class="formula-card expression-card">
+        <div class="formula-card-head">
+          <span class="formula-label">3D surface z(x,y)</span>
+          <button class="secondary-action compact-action" aria-label="Load black hole halo 3D equation" on:click={useBlackHoleHaloExpression}>
+            Black hole halo
+          </button>
+        </div>
+        <textarea
+          class={`formula-input surface-expression-input ${surfaceExpressionStatus.ok ? '' : 'expression-error'}`}
+          aria-label="3D surface expression"
+          rows="3"
+          value={activeScene.surfaceExpression}
+          on:input={(event) => setSurfaceExpression(event.currentTarget.value)}
+        ></textarea>
+        <span
+          class={`expression-status ${surfaceExpressionStatus.ok ? 'expression-status-ok' : 'expression-status-error'}`}
+        >
+          {surfaceExpressionStatus.message}
+        </span>
+        <code>Use x, y, r, a/A, b/k, phi, R, sigma, M, epsilon</code>
+      </div>
     </div>
 
     <div class="section">
@@ -1322,6 +1370,7 @@
           amplitude={renderAmplitude}
           frequency={renderFrequency}
           phase={renderPhase}
+          surfaceExpression={activeScene.surfaceExpression}
           visual={activeScene.visual}
           {cameraPose}
           on:ready={(event) => (threeCanvas = event.detail)}
@@ -2223,6 +2272,13 @@
     opacity: 0.76;
   }
 
+  .formula-card-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
   code {
     color: #f4d35e;
     white-space: normal;
@@ -2235,6 +2291,12 @@
     background: #10151b;
     border: 1px solid #334253;
     border-radius: 6px;
+  }
+
+  .surface-expression-input {
+    min-height: 72px;
+    line-height: 1.35;
+    resize: vertical;
   }
 
   .expression-error {
@@ -2336,6 +2398,13 @@
 
   .secondary-action {
     min-height: 34px;
+  }
+
+  .compact-action {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .viewport {

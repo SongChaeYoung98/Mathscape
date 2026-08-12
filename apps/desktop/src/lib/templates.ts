@@ -3,25 +3,33 @@ import {
   defaultSceneAnnotationSettings,
   defaultSceneOverlaySettings,
   defaultSceneVisualSettings,
+  defaultSurfaceExpression,
   type MathscapeProject,
   type MathscapeScene
 } from './project';
+
+type SceneTemplateScene = Omit<MathscapeScene, 'surfaceExpression'> & Partial<Pick<MathscapeScene, 'surfaceExpression'>>;
 
 export type SceneTemplate = {
   id: string;
   name: string;
   description: string;
   targetPanel: '2D' | '3D' | 'Complex';
-  createScene: () => MathscapeScene;
+  createScene: () => SceneTemplateScene;
 };
 
-function sceneProject(scene: MathscapeScene): MathscapeProject {
+function sceneProject(scene: SceneTemplateScene): MathscapeProject {
+  const completeScene: MathscapeScene = {
+    ...scene,
+    surfaceExpression: scene.surfaceExpression ?? defaultSurfaceExpression
+  };
+
   return {
     schemaVersion: 1,
-    title: scene.name,
-    activeSceneId: scene.id,
+    title: completeScene.name,
+    activeSceneId: completeScene.id,
     exportSettings: defaultExportSettings,
-    scenes: [scene]
+    scenes: [completeScene]
   };
 }
 

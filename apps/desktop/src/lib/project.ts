@@ -26,6 +26,7 @@ export type MathscapeScene = {
   formulaLatex: string;
   nextTransformLatex: string;
   expression: string;
+  surfaceExpression: string;
   plotMode: PlotMode;
   complexMode: ComplexFunctionMode;
   parameters: MathscapeParameters;
@@ -148,6 +149,9 @@ export const defaultSceneOverlaySettings: SceneOverlaySettings = {
   cardScale: 1
 };
 
+export const defaultSurfaceExpression =
+  'a*sin(b*sqrt(x^2+y^2)+phi)*exp(-sqrt(x^2+y^2)*0.18)';
+
 export function createDefaultProject(): MathscapeProject {
   return {
     schemaVersion: 1,
@@ -161,6 +165,7 @@ export function createDefaultProject(): MathscapeProject {
         formulaLatex: 'f(x)=a\\sin(bx+\\phi)',
         nextTransformLatex: "f'(x)=ab\\cos(bx+\\phi)",
         expression: 'a*sin(b*x+phi)',
+        surfaceExpression: defaultSurfaceExpression,
         plotMode: 'sine',
         complexMode: 'quadratic',
         parameters: {
@@ -309,6 +314,7 @@ export function normalizeProject(project: Partial<MathscapeProject>): MathscapeP
       complexMode: scene.complexMode ?? fallback.scenes[0].complexMode,
       plotMode: scene.plotMode ?? fallback.scenes[0].plotMode,
       expression: scene.expression ?? fallback.scenes[0].expression,
+      surfaceExpression: scene.surfaceExpression ?? fallback.scenes[0].surfaceExpression,
       visual: {
         ...fallback.scenes[0].visual,
         ...scene.visual
