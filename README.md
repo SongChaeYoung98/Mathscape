@@ -39,6 +39,7 @@ npm run tauri dev
 - `math-core` crate with expression and sampling primitives
 - Three.js 3D surface and parametric curve viewport
 - 3D reference grid and labeled axes with color-map-aware surface/curve materials
+- 3D viewport PNG sequence export from the live WebGL canvas at the configured export resolution
 - Complex domain coloring viewport
 - Playwright visual smoke check for 2D, 3D, and complex canvases
 - Timeline playback with keyframed parameter interpolation
@@ -47,7 +48,9 @@ npm run tauri dev
 - SVG export for the current 2D frame as scalable vector artwork
 - Initial PNG sequence export path for timeline frames
 - Transparent background option for 2D PNG sequence, SVG, preview, and native MP4 frame rendering
+- Complex-domain PNG sequence export for animated domain-coloring scenes
 - Riemann zeta complex-domain demo preset using an eta-series approximation
+- Zeta critical-line overlay with approximate non-trivial zero markers
 - Timeline-driven 3D camera animation
 - KaTeX-rendered editable formula cards
 - Creator starter scenes for sine transforms, Fourier build-ups, eigenvector linear transforms, zeta domain coloring, 3D helix curves, and 3D surface ripples
@@ -57,7 +60,7 @@ npm run tauri dev
 - 2D linear-transform renderer with transformed grids, basis vectors, and eigen-direction guides for linear-algebra explainers
 - Native Tauri project library commands backed by SQLite, with UI hooks for saving and reopening local projects
 - Native FFmpeg command bridge for MP4 encoding from PNG frame sequences, with a guarded MP4 export entry point in the UI
-- MP4 export pipeline now renders 2D animation frames, writes them to a native export session directory, and hands the frame pattern to FFmpeg in Tauri
+- MP4 export pipeline renders 2D, complex-domain, or live 3D viewport frames, writes them to a native export session directory, and hands the frame pattern to FFmpeg in Tauri
 - Project-level export settings for resolution, frame count, and FPS, shared by PNG sequence and native MP4 frame rendering
 - Inspector-side 2D export frame preview that reflects the current playhead, overlay layout, annotations, and export aspect ratio
 - Timed derivation steps for creator scripts, with LaTeX-rendered solution cards linked to the animation timeline
@@ -127,9 +130,13 @@ npm run tauri dev
 - 파라미터 슬라이더와 timeline keyframe 애니메이션
 - 2D 함수 그래프, Fourier, parametric curve, vector field, linear transform 렌더러
 - Three.js 기반 3D surface 및 3D helix curve 렌더러
+- 설정된 export 해상도를 따르는 live WebGL canvas 기반 3D viewport PNG sequence export
 - 복소평면 domain coloring 및 zeta demo
+- zeta critical line overlay와 approximate non-trivial zero marker
+- complex-domain animation PNG sequence export
 - PNG, SVG, PNG sequence export
 - Tauri 환경에서 FFmpeg 기반 MP4 export 경로
+- 2D, complex-domain, live 3D viewport frame을 FFmpeg bridge로 넘기는 MP4 export frame source
 - SQLite 기반 native project library 명령
 - Playwright visual smoke test와 unit test
 

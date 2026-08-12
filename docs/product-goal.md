@@ -246,6 +246,21 @@ mathscape/
 - Avoid requiring code for common workflows.
 - Keep scripting available for advanced users.
 
+## Expert Usability Review Standard
+
+Mathscape should be reviewed as if it were being tested by real mathematicians, engineering PhDs, educators, and working technical creators.
+
+Every major workflow should be evaluated for:
+
+- Whether the mathematical intent is clear without reading documentation.
+- Whether notation, labels, parameter names, and transformations match professional mathematical expectations.
+- Whether the UI makes advanced concepts easier to explain instead of hiding important structure.
+- Whether repeated authoring work feels efficient for lectures, papers, and YouTube production.
+- Whether timeline editing, camera movement, export setup, and formula editing expose friction that a serious creator would notice.
+- Whether visual defaults are publication-ready and not merely decorative.
+- Whether error states explain what went wrong in mathematical terms.
+- Whether exported artifacts preserve the same mathematical and visual meaning seen in the live workspace.
+
 ## Non-Goals
 
 - Do not compete as a basic calculator-only product.
@@ -266,4 +281,3 @@ mathscape/
 8. Add Three.js 3D viewport.
 9. Add FFmpeg-based export.
 10. Build the first showcase example: Fourier series or complex domain coloring before the Riemann zeta demo.
-

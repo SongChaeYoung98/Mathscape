@@ -3,7 +3,15 @@
   import ComplexDomain from '$lib/ComplexDomain.svelte';
   import FormulaMath from '$lib/FormulaMath.svelte';
   import ThreeSurface from '$lib/ThreeSurface.svelte';
-  import { download2dSequence, download2dSvg, downloadCanvasPng, render2dFrameDataUrl } from '$lib/export';
+  import {
+    download2dSequence,
+    download2dSvg,
+    downloadCanvasPng,
+    downloadCanvasPngFrame,
+    downloadComplexSequence,
+    render2dFrameDataUrl,
+    renderComplexFrameDataUrl
+  } from '$lib/export';
   import {
     createVideoExportSession,
     encodePngSequenceToMp4,
@@ -810,7 +818,19 @@
 
   async function exportPngSequence() {
     isPlaying = false;
+    if (selectedPanel === '3D') {
+      await export3dPngSequence();
+      return;
+    }
+
     exportStatus = `Exporting ${exportSettings.frameCount} PNG frames`;
+
+    if (selectedPanel === 'Complex') {
+      await downloadComplexSequence(activeScene, exportSettings.frameCount, exportSettings.width, exportSettings.height);
+      exportStatus = `${exportSettings.frameCount} Complex PNG frames saved at ${exportSettings.width}x${exportSettings.height}`;
+      return;
+    }
+
     await download2dSequence(
       activeScene,
       exportSettings.frameCount,
@@ -818,7 +838,37 @@
       exportSettings.height,
       exportSettings.transparentBackground
     );
-    exportStatus = `${exportSettings.frameCount} PNG frames saved at ${exportSettings.width}x${exportSettings.height}`;
+    exportStatus = `${exportSettings.frameCount} 2D PNG frames saved at ${exportSettings.width}x${exportSettings.height}`;
+  }
+
+  async function export3dPngSequence() {
+    if (!threeCanvas) {
+      exportStatus = 'No 3D viewport';
+      return;
+    }
+
+    const frameCount = Math.max(1, exportSettings.frameCount);
+    exportStatus = `Exporting ${frameCount} 3D PNG frames`;
+
+    for (let frame = 0; frame < frameCount; frame += 1) {
+      currentTime = (activeScene.durationSeconds * frame) / Math.max(1, frameCount - 1);
+      await nextRenderFrame();
+      await nextRenderFrame();
+      await downloadCanvasPngFrame(
+        capture3dFrameCanvas(),
+        `mathscape-3d-frame-${String(frame + 1).padStart(3, '0')}.png`
+      );
+
+      if ((frame + 1) % 4 === 0) {
+        exportStatus = `Exported ${frame + 1}/${frameCount} 3D frames`;
+      }
+    }
+
+    exportStatus = `${frameCount} 3D PNG frames saved from viewport`;
+  }
+
+  function nextRenderFrame(): Promise<void> {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
   }
 
   function exportSvg() {
@@ -857,14 +907,7 @@
 
       exportStatus = 'Rendering MP4 frames';
       for (let frame = 0; frame < frameCount; frame += 1) {
-        const dataUrl = render2dFrameDataUrl(
-          activeScene,
-          frame,
-          frameCount,
-          exportSettings.width,
-          exportSettings.height,
-          exportSettings.transparentBackground
-        );
+        const dataUrl = await renderMp4Frame(frame, frameCount);
         await writeVideoExportFrame(session.directory, frame + 1, dataUrl);
 
         if ((frame + 1) % 12 === 0) {
@@ -879,6 +922,48 @@
     } catch {
       exportStatus = 'Could not export MP4';
     }
+  }
+
+  async function renderMp4Frame(frame: number, frameCount: number): Promise<string> {
+    if (selectedPanel === 'Complex') {
+      return renderComplexFrameDataUrl(activeScene, frame, frameCount, exportSettings.width, exportSettings.height);
+    }
+
+    if (selectedPanel === '3D') {
+      if (!threeCanvas) {
+        throw new Error('No 3D viewport');
+      }
+      currentTime = (activeScene.durationSeconds * frame) / Math.max(1, frameCount - 1);
+      await nextRenderFrame();
+      await nextRenderFrame();
+      return capture3dFrameCanvas().toDataURL('image/png');
+    }
+
+    return render2dFrameDataUrl(
+      activeScene,
+      frame,
+      frameCount,
+      exportSettings.width,
+      exportSettings.height,
+      exportSettings.transparentBackground
+    );
+  }
+
+  function capture3dFrameCanvas(): HTMLCanvasElement {
+    if (!threeCanvas) {
+      throw new Error('No 3D viewport');
+    }
+
+    const captureCanvas = document.createElement('canvas');
+    captureCanvas.width = exportSettings.width;
+    captureCanvas.height = exportSettings.height;
+    const context = captureCanvas.getContext('2d');
+    if (!context) {
+      throw new Error('Could not capture 3D viewport');
+    }
+
+    context.drawImage(threeCanvas, 0, 0, captureCanvas.width, captureCanvas.height);
+    return captureCanvas;
   }
 
   function togglePlayback() {

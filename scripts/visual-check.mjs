@@ -471,6 +471,14 @@ async function main() {
       if (surfaceBeforeCamera.checksum === surfaceAfterCamera.checksum) {
         throw new Error(`${viewport.name} camera timeline did not affect 3D render`);
       }
+      await page.locator('input[aria-label="Export frame count"]').fill('2');
+      const surfaceSequencePromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'PNG Seq' }).click();
+      const surfaceSequenceDownload = await surfaceSequencePromise;
+      if (!surfaceSequenceDownload.suggestedFilename().startsWith('mathscape-3d-frame-')) {
+        throw new Error(`${viewport.name} 3D PNG sequence did not create 3D frames`);
+      }
+      await page.getByText('3D PNG frames saved from viewport').waitFor();
 
       await page.getByRole('button', { name: 'Load 3D Helix Curve template' }).click();
       await page.locator('.three-host canvas').waitFor();
@@ -500,19 +508,28 @@ async function main() {
       }
 
       await page.getByRole('button', { name: 'Complex' }).click();
-      await page.locator('canvas[aria-label="Complex domain coloring preview"]').waitFor();
-      const complexSamples = await sampleCanvas(page, 'canvas[aria-label="Complex domain coloring preview"]');
+      await page.locator('canvas[aria-label*="Complex domain coloring preview"]').waitFor();
+      const complexSamples = await sampleCanvas(page, 'canvas[aria-label*="Complex domain coloring preview"]');
       assertPixelVariety(complexSamples, `${viewport.name} complex domain coloring`);
-      const complexBeforeZeta = await canvasChecksum(page, 'canvas[aria-label="Complex domain coloring preview"]');
+      const complexBeforeZeta = await canvasChecksum(page, 'canvas[aria-label*="Complex domain coloring preview"]');
 
       await page.getByRole('button', { name: 'Zeta', exact: true }).click();
       await page.waitForTimeout(600);
-      const zetaSamples = await sampleCanvas(page, 'canvas[aria-label="Complex domain coloring preview"]');
+      await page.locator('canvas[aria-label*="zeta critical line and zero markers"]').waitFor();
+      const zetaSamples = await sampleCanvas(page, 'canvas[aria-label*="Complex domain coloring preview"]');
       assertPixelVariety(zetaSamples, `${viewport.name} zeta domain coloring`);
-      const complexAfterZeta = await canvasChecksum(page, 'canvas[aria-label="Complex domain coloring preview"]');
+      const complexAfterZeta = await canvasChecksum(page, 'canvas[aria-label*="Complex domain coloring preview"]');
       if (complexBeforeZeta === complexAfterZeta) {
         throw new Error(`${viewport.name} zeta preset did not affect complex render`);
       }
+      await page.locator('input[aria-label="Export frame count"]').fill('2');
+      const complexSequencePromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'PNG Seq' }).click();
+      const complexSequenceDownload = await complexSequencePromise;
+      if (!complexSequenceDownload.suggestedFilename().startsWith('mathscape-complex-frame-')) {
+        throw new Error(`${viewport.name} complex PNG sequence did not create complex frames`);
+      }
+      await page.getByText('Complex PNG frames saved').waitFor();
 
       await page.getByRole('button', { name: 'MP4' }).click();
       await page.getByText('MP4 export is available in the Tauri app').waitFor();

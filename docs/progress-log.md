@@ -1,6 +1,6 @@
 # Mathscape Progress Log
 
-Last updated: 2026-08-07
+Last updated: 2026-08-12
 
 ## Active Goal
 
@@ -14,7 +14,7 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Native Tauri command layer includes SQLite-backed project library hooks and FFmpeg export bridge hooks.
 - 2D rendering supports sine, Fourier square-wave preview, editable expression plots, parametric curves, vector fields with trajectory tracing, and linear-transform grids with basis vectors and eigen-direction guides.
 - 3D rendering supports Three.js surface plots and 3D parametric curve rendering via a surface/curve render-mode switch.
-- Complex rendering supports quadratic domain coloring and a zeta/eta-series approximation demo.
+- Complex rendering supports quadratic domain coloring and a zeta/eta-series approximation demo with critical-line and zero-marker overlays.
 - Creator-oriented templates currently include:
   - Sine Transform
   - Fourier Build
@@ -24,7 +24,9 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
   - Phase Portrait
   - 3D Helix Curve
   - 3D Surface Ripple
-- Export supports active viewport PNG snapshots, 2D SVG export, 2D PNG sequence export, transparent 2D export backgrounds, export frame preview, and a native MP4 path through Tauri/FFmpeg when FFmpeg is installed.
+- Export supports active viewport PNG snapshots, 2D SVG export, 2D/complex/3D PNG sequence export, transparent 2D export backgrounds, export frame preview, and a native MP4 path through Tauri/FFmpeg when FFmpeg is installed.
+- Complex-domain scenes can export animated PNG sequences through the same export settings used by the 2D pipeline.
+- 3D scenes can export viewport PNG sequences from the live WebGL canvas at the configured export resolution with timeline/camera keyframes applied.
 - Visual checks cover desktop and compact viewports, project save/load shape, templates, 2D/3D/complex rendering, styling controls, overlays, export settings, animation presets, and native MP4 browser fallback.
 
 ## Most Recent Completed Work
@@ -50,6 +52,35 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Added `Eigen Transform` creator template.
 - Added unit tests for linear-transform sampling and SVG export.
 - Added visual-check coverage for template load, canvas rendering, and saved `plotMode`.
+
+### Zeta Critical-Line Overlay
+
+- Updated `ComplexDomain.svelte` so zeta mode centers the viewport near non-trivial zero heights.
+- Added approximate zero markers for the first few known critical-line zeros.
+- Updated the zeta canvas aria-label so visual checks can assert that the critical-line/zero-marker layer is active.
+- Updated visual-check coverage to detect the zeta critical-line and zero-marker mode.
+
+### Complex-Domain PNG Sequence Export
+
+- Added `renderComplexFrameDataUrl()` and `downloadComplexSequence()` to the export pipeline.
+- Reused scene duration, export resolution, frame count, and parameter keyframes for complex-domain animation frames.
+- Updated the `PNG Seq` command so 2D exports 2D frames and Complex exports complex-domain frames.
+- Added visual-check coverage for complex-domain PNG sequence downloads.
+
+### 3D Viewport PNG Sequence Export
+
+- Added an awaitable canvas PNG frame download helper.
+- Updated the `PNG Seq` command so 3D advances the playhead frame-by-frame and captures the live Three.js/WebGL canvas.
+- 3D sequence export now respects parameter interpolation, camera keyframes, and configured export resolution through the existing timeline state.
+- Added visual-check coverage for 3D PNG sequence downloads.
+
+### Multi-Renderer MP4 Frame Sources
+
+- Updated the native MP4 frame rendering path so it chooses a frame source from the active panel.
+- 2D uses the existing offscreen 2D renderer.
+- Complex uses the complex-domain offscreen renderer.
+- 3D advances the playhead and captures the live Three.js/WebGL canvas at the configured export resolution.
+- The actual FFmpeg encode still requires the Tauri app plus FFmpeg in PATH.
 
 ## Verified Commands
 
@@ -89,19 +120,18 @@ cargo check
 
 ## Where To Resume
 
-The interrupted next task was about improving the complex-plane / Riemann zeta demo so it feels more like a creator-facing advanced math explanation tool.
+The next best task is to validate and harden the native desktop toolchain.
 
 Start here:
 
-1. Inspect `apps/desktop/src/lib/ComplexDomain.svelte`.
-2. Add clearer zeta-specific visual affordances:
-   - critical line emphasis
-   - approximate zero markers
-   - optional labels or timeline-aware highlights
-3. Keep the interaction model consistent with existing parameters `a`, `b`, and `phi`.
-4. Update `scripts/visual-check.mjs` to verify that zeta mode changes the canvas and that the new critical-line/zero-marker layer is present visually or semantically.
-5. Update `README.md` after implementation.
-6. Run:
+1. Read the "Expert Usability Review Standard" in `docs/product-goal.md` before making UX changes.
+2. Install or locate Rust and FFmpeg on the machine.
+3. Run `cargo check`, `npm run tauri dev`, and a real MP4 export from the Tauri app.
+4. Review the chosen workflow as if a mathematician, engineering PhD, educator, and working STEM creator were testing it for real production use.
+5. Keep timeline playback, overlay layout, and export settings consistent with the current 2D export pipeline.
+6. Update `scripts/visual-check.mjs` to verify the chosen export workflow.
+7. Update `README.md` and this progress log after implementation.
+8. Run:
 
 ```bash
 npm run test
@@ -128,4 +158,3 @@ Expect `cargo check` and `ffmpeg -version` to fail until Rust and FFmpeg are ins
 - `apps/desktop/src/routes/+page.svelte`: main authoring workspace and Inspector.
 - `scripts/visual-check.mjs`: Playwright visual smoke coverage.
 - `crates/project-format/src/lib.rs`: Rust mirror of portable project format.
-

@@ -11,6 +11,7 @@
   let canvas: HTMLCanvasElement;
   let resizeObserver: ResizeObserver;
   const dispatch = createEventDispatcher<{ ready: HTMLCanvasElement }>();
+  const zetaZeros = [14.134725, 21.02204, 25.010858, 30.424876, 32.935062];
 
   function hsvToRgb(hue: number, saturation: number, value: number) {
     const h = ((hue % 1) + 1) % 1;
@@ -53,7 +54,7 @@
     let etaIm = 0;
     const terms = 42;
     const shiftedRe = 0.5 + re * 0.34;
-    const shiftedIm = im * 4.8 + phase * 0.4;
+    const shiftedIm = zetaCenterT() + im * 4.8;
     const scale = 0.72 + amplitude * 0.18;
 
     for (let n = 1; n <= terms; n += 1) {
@@ -75,6 +76,16 @@
       re: scale * ((etaRe * denomRe + etaIm * denomIm) / denomMag),
       im: scale * ((etaIm * denomRe - etaRe * denomIm) / denomMag)
     };
+  }
+
+  function zetaCenterT() {
+    return 18 + phase * 0.8;
+  }
+
+  function zetaScreenY(zeroT: number, span: number, cssHeight: number) {
+    const im = (zeroT - zetaCenterT()) / 4.8;
+    if (im < -span || im > span) return undefined;
+    return (1 - (im / span + 1) / 2) * cssHeight;
   }
 
   function draw() {
@@ -132,6 +143,33 @@
     context.stroke();
     context.setLineDash([]);
 
+    if (mode === 'zeta') {
+      const visibleZeros = zetaZeros
+        .map((zero) => ({ zero, y: zetaScreenY(zero, span, cssHeight) }))
+        .filter((entry): entry is { zero: number; y: number } => entry.y !== undefined);
+
+      context.save();
+      visibleZeros.forEach((entry, index) => {
+        const pulse = 1 + 0.18 * Math.sin(phase + index);
+        context.shadowColor = 'rgba(244, 211, 94, 0.82)';
+        context.shadowBlur = 16;
+        context.fillStyle = 'rgba(244, 211, 94, 0.92)';
+        context.strokeStyle = 'rgba(237, 242, 244, 0.96)';
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(criticalX, entry.y, 6.5 * pulse, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.shadowBlur = 0;
+        context.fillStyle = 'rgba(15, 20, 25, 0.74)';
+        context.fillRect(criticalX + 12, entry.y - 12, 62, 22);
+        context.fillStyle = '#edf2f4';
+        context.font = '600 11px Inter, system-ui, sans-serif';
+        context.fillText(`t=${entry.zero.toFixed(2)}`, criticalX + 18, entry.y + 3);
+      });
+      context.restore();
+    }
+
     context.fillStyle = 'rgba(15, 20, 25, 0.72)';
     context.fillRect(18, 18, 196, 58);
     context.strokeStyle = 'rgba(143, 188, 230, 0.6)';
@@ -141,7 +179,7 @@
     context.fillText(mode === 'zeta' ? 'zeta(s), critical line' : 'f(z)=a(zb)^2 + c(phi)', 32, 43);
     context.fillStyle = '#e9c46a';
     context.font = '12px Inter, system-ui, sans-serif';
-    context.fillText(mode === 'zeta' ? 'eta-series approximation' : 'phase = hue, magnitude = light', 32, 62);
+    context.fillText(mode === 'zeta' ? `zeros near t=${zetaCenterT().toFixed(1)}` : 'phase = hue, magnitude = light', 32, 62);
   }
 
   $: amplitude, frequency, phase, mode, draw();
@@ -158,4 +196,9 @@
   });
 </script>
 
-<canvas bind:this={canvas} aria-label="Complex domain coloring preview"></canvas>
+<canvas
+  bind:this={canvas}
+  aria-label={mode === 'zeta'
+    ? 'Complex domain coloring preview with zeta critical line and zero markers'
+    : 'Complex domain coloring preview'}
+></canvas>
