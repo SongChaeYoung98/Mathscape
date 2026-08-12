@@ -161,12 +161,12 @@ async function main() {
       await page.getByRole('button', { name: 'Load Fourier Build template' }).click();
       await page.locator('.katex').first().waitFor();
       await page.locator('[aria-label="Presentation overlay"]').waitFor();
+      await page.locator('[aria-label="Presentation overlay"]').getByText('Graph equation').waitFor();
+      if (await page.locator('[aria-label="Presentation overlay"]').getByText('Define function').count()) {
+        throw new Error(`${viewport.name} derivation overlay should not cover the stage by default`);
+      }
       await page.getByRole('button', { name: 'Jump to solution step Limit' }).click();
       await page.waitForFunction(() => Number(document.querySelector('input[aria-label="Timeline scrubber"]')?.value) >= 7);
-      await page
-        .locator('[aria-label="Presentation overlay"]')
-        .getByText('Resolve the construction into the target waveform.')
-        .waitFor();
       const stepTime = await page.locator('input[aria-label="Timeline scrubber"]').inputValue();
       if (Number(stepTime) < 7) {
         throw new Error(`${viewport.name} derivation step did not move the timeline`);
@@ -219,10 +219,9 @@ async function main() {
       await page.locator('textarea[aria-label="Solution step Limit note"]').fill('Edited narration beat for export.');
       await page.locator('input[aria-label="Solution step Limit label"]').fill('Resolution');
       await page.getByRole('button', { name: 'Jump to solution step Resolution' }).click();
-      await page
-        .locator('[aria-label="Presentation overlay"]')
-        .getByText('Edited narration beat for export.')
-        .waitFor();
+      if (await page.locator('[aria-label="Presentation overlay"]').getByText('Edited narration beat for export.').count()) {
+        throw new Error(`${viewport.name} derivation note should not cover the stage`);
+      }
       await page.getByRole('button', { name: 'Add solution step' }).click();
       await page.getByText('Added solution step').waitFor();
       await page.getByRole('button', { name: 'Delete solution step Step 4' }).click();

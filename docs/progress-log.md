@@ -15,6 +15,7 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Native Tauri command layer includes SQLite-backed project library hooks and FFmpeg export bridge hooks.
 - 2D rendering supports sine, Fourier square-wave preview, editable expression plots, parametric curves, vector fields with trajectory tracing, and linear-transform grids with basis vectors and eigen-direction guides.
 - Formula Stack now starts with a single Graph Equation input that routes ordinary `x` expressions to 2D and `z(x,y)`/surface expressions to 3D.
+- The stage overlay now shows only the active Graph Equation by default instead of template title/derivation narration cards.
 - 3D rendering supports editable `z(x,y)` surface plots, a black-hole halo starter equation, and 3D parametric curve rendering via a surface/curve render-mode switch.
 - Complex rendering supports quadratic domain coloring and a zeta/eta-series approximation demo with critical-line and zero-marker overlays.
 - Creator-oriented templates currently include:

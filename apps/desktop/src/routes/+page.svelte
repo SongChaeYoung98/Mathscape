@@ -1433,18 +1433,8 @@
               class={`overlay-card formula-overlay ${overlayClass(activeScene.overlay.formulaPosition)}`}
               style={`--overlay-scale: ${activeScene.overlay.cardScale}`}
             >
-              <span>{activeScene.name}</span>
-              <FormulaMath latex={activeScene.formulaLatex} />
-            </div>
-          {/if}
-          {#if activeScene.overlay.showDerivation && activeDerivationStep}
-            <div
-              class={`overlay-card derivation-overlay ${overlayClass(activeScene.overlay.derivationPosition)}`}
-              style={`--overlay-scale: ${activeScene.overlay.cardScale}`}
-            >
-              <strong>{activeDerivationStep.label}</strong>
-              <FormulaMath latex={activeDerivationStep.latex} />
-              <em>{activeDerivationStep.note}</em>
+              <span>Graph equation</span>
+              <code>{graphEquationValue}</code>
             </div>
           {/if}
         </div>
@@ -2505,28 +2495,13 @@
     bottom: 0;
   }
 
-  .overlay-card span,
-  .overlay-card strong {
+  .overlay-card span {
     display: block;
     margin-bottom: calc(6px * var(--overlay-scale, 1));
     color: #e9c46a;
     font-size: calc(12px * var(--overlay-scale, 1));
     letter-spacing: 0;
     text-transform: uppercase;
-  }
-
-  .overlay-card em {
-    display: block;
-    margin-top: calc(6px * var(--overlay-scale, 1));
-    color: #c9d6df;
-    font-size: calc(13px * var(--overlay-scale, 1));
-    font-style: normal;
-  }
-
-  .overlay-card :global(.katex) {
-    max-width: 100%;
-    overflow: hidden;
-    font-size: 1.05em;
   }
 
   canvas {

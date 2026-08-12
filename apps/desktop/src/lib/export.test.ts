@@ -85,11 +85,11 @@ describe('render2dFrameSvg', () => {
     const scene = {
       ...createDefaultProject().scenes[0],
       name: 'A < B & C',
-      formulaLatex: 'f(x)<g(x)&h(x)'
+      expression: 'f(x)<g(x)&h(x)'
     };
     const svg = render2dFrameSvg(scene, 0, 640, 360);
 
-    expect(svg).toContain('A &lt; B &amp; C');
+    expect(svg).toContain('GRAPH EQUATION');
     expect(svg).toContain('f(x)&lt;g(x)&amp;h(x)');
     expect(svg).not.toContain('A < B & C');
   });

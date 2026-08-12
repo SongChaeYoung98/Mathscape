@@ -388,7 +388,6 @@ function drawFrameOverlay(canvas: HTMLCanvasElement, scene: MathscapeScene, time
   const context = canvas.getContext('2d');
   if (!context) return;
 
-  const step = getActiveDerivationStep(scene, timeSeconds);
   const scale = canvas.width / 1920;
   const margin = 56 * scale;
   const cardScale = Math.max(0.7, Math.min(1.4, scene.overlay.cardScale));
@@ -398,28 +397,15 @@ function drawFrameOverlay(canvas: HTMLCanvasElement, scene: MathscapeScene, time
   context.textBaseline = 'top';
 
   if (scene.overlay.showFormula) {
-    const metrics = overlayCardMetrics(context, [scene.formulaLatex], cardScale);
+    const lines = [scene.expression];
+    const metrics = overlayCardMetrics(context, lines, cardScale);
     const position = overlayCardPosition(canvas, scene.overlay.formulaPosition, cardWidth, metrics.height, margin);
     drawOverlayCard(context, {
       x: position.x,
       y: position.y,
       width: cardWidth,
       scale: cardScale,
-      title: scene.name,
-      lines: [scene.formulaLatex]
-    });
-  }
-
-  if (scene.overlay.showDerivation && step) {
-    const lines = [step.latex, step.note];
-    const metrics = overlayCardMetrics(context, lines, cardScale);
-    const position = overlayCardPosition(canvas, scene.overlay.derivationPosition, cardWidth, metrics.height, margin);
-    drawOverlayCard(context, {
-      x: position.x,
-      y: position.y,
-      width: cardWidth,
-      scale: cardScale,
-      title: step.label,
+      title: 'Graph equation',
       lines
     });
   }
@@ -640,19 +626,15 @@ function renderSvgOverlay(scene: MathscapeScene, timeSeconds: number, width: num
   const cardScale = Math.max(0.7, Math.min(1.4, scene.overlay.cardScale));
   const cardWidth = 650 * scale * cardScale;
   const items: string[] = [];
-  const step = getActiveDerivationStep(scene, timeSeconds);
 
   if (scene.overlay.showFormula) {
     const cardHeight = svgOverlayCardHeight(1, scale, cardScale);
     const position = svgOverlayPosition(width, height, scene.overlay.formulaPosition, cardWidth, cardHeight, margin);
-    items.push(renderSvgOverlayCard(position.x, position.y, cardWidth, cardHeight, scale, cardScale, scene.name, [scene.formulaLatex]));
-  }
-
-  if (scene.overlay.showDerivation && step) {
-    const lines = [step.latex, step.note];
-    const cardHeight = svgOverlayCardHeight(lines.length, scale, cardScale);
-    const position = svgOverlayPosition(width, height, scene.overlay.derivationPosition, cardWidth, cardHeight, margin);
-    items.push(renderSvgOverlayCard(position.x, position.y, cardWidth, cardHeight, scale, cardScale, step.label, lines));
+    items.push(
+      renderSvgOverlayCard(position.x, position.y, cardWidth, cardHeight, scale, cardScale, 'Graph equation', [
+        scene.expression
+      ])
+    );
   }
 
   return `<g aria-label="presentation overlay">${items.join('')}</g>`;

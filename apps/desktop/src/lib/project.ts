@@ -143,7 +143,7 @@ export const defaultSceneAnnotationSettings: SceneAnnotationSettings = {
 export const defaultSceneOverlaySettings: SceneOverlaySettings = {
   enabled: true,
   showFormula: true,
-  showDerivation: true,
+  showDerivation: false,
   formulaPosition: 'top-left',
   derivationPosition: 'bottom-right',
   cardScale: 1

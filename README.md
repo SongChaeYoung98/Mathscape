@@ -76,6 +76,7 @@ npm run tauri dev
 - Inspector-side parameter keyframe editing for timeline-controlled `a`, `b`, and `phi` animation values
 - Inspector-side camera keyframe editing for 3D position, look target, FOV, easing, and capture-at-playhead workflows
 - Presentation overlay controls for formula and derivation cards on the stage, also rendered into 2D PNG/MP4 frame exports
+- Stage overlay now shows only the active Graph Equation by default, avoiding template narration cards over the graph
 - Export-aware presentation overlay layout controls for formula/derivation card positions and card scale
 - Editable 2D expression graphing with a constrained parser for `x`, `a`, `b`, `phi`, constants, elementary functions, and arithmetic operators
 - Inline validation for editable 2D expressions, including parse and sample-evaluation errors before export/render workflows
