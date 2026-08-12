@@ -39,6 +39,7 @@ npm run tauri dev
 - `math-core` crate with expression and sampling primitives
 - Three.js 3D surface and parametric curve viewport
 - Editable 3D surface equation input for `z(x,y)` height fields
+- Single Graph Equation input that routes ordinary `x` expressions to 2D and `z(x,y)`/surface expressions to 3D
 - One-click black-hole halo surface equation starter
 - 3D reference grid and labeled axes with color-map-aware surface/curve materials
 - 3D viewport PNG sequence export from the live WebGL canvas at the configured export resolution
@@ -134,6 +135,7 @@ npm run tauri dev
 - 2D 함수 그래프, Fourier, parametric curve, vector field, linear transform 렌더러
 - Three.js 기반 3D surface 및 3D helix curve 렌더러
 - `z(x,y)` 입력형 3D surface equation editor
+- 일반 `x` 수식은 2D로, `z(x,y)` surface 수식은 3D로 바로 보내는 단일 Graph Equation 입력창
 - black-hole halo 3D equation starter
 - 설정된 export 해상도를 따르는 live WebGL canvas 기반 3D viewport PNG sequence export
 - 복소평면 domain coloring 및 zeta demo

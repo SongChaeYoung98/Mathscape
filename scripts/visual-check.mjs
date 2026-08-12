@@ -333,8 +333,9 @@ async function main() {
         throw new Error(`${viewport.name} SVG export did not create an SVG`);
       }
       await page.locator('input[aria-label="2D expression"]').fill('a*');
-      await page.getByText('Missing operand').waitFor();
-      await page.locator('input[aria-label="2D expression"]').fill('a*cos(b*x+phi)');
+      await page.getByText('Missing operand', { exact: true }).waitFor();
+      await page.locator('textarea[aria-label="Graph equation"]').fill('a*cos(b*x+phi)');
+      await page.getByText('Rendering 2D graph equation').waitFor();
       await page.getByText('Expression OK', { exact: true }).waitFor();
       await page.waitForTimeout(300);
       const afterExpression = await canvasChecksum(page, 'canvas[aria-label="2D sine graph preview"]');
@@ -349,9 +350,17 @@ async function main() {
       if (!snapshot.suggestedFilename().endsWith('.png')) {
         throw new Error(`${viewport.name} snapshot export did not create a PNG`);
       }
+      await page
+        .locator('textarea[aria-label="Graph equation"]')
+        .fill(
+          'z(x,y)=A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)'
+        );
+      await page.getByText('Rendering 3D surface equation').waitFor();
+      await page.getByText('3D surface: 3D expression OK').waitFor();
+      await page.locator('.three-host canvas').waitFor();
       await page.getByRole('button', { name: 'Load black hole halo 3D equation' }).click();
       await page.getByText('Black hole halo 3D equation loaded').waitFor();
-      await page.getByText('3D expression OK').waitFor();
+      await page.getByText('3D expression OK', { exact: true }).waitFor();
       await page.locator('.three-host canvas').waitFor();
       await page.waitForTimeout(500);
       const haloSignature = await canvasDataUrlSignature(page, '.three-host canvas');
@@ -384,7 +393,7 @@ async function main() {
       }
 
       await page.getByRole('button', { name: 'Load Parametric Orbit template' }).click();
-      await page.getByText('Parametric curve mode').waitFor();
+      await page.getByText('Parametric curve mode', { exact: true }).waitFor();
       await page.waitForTimeout(300);
       const parametricSamples = await sampleCanvas(page, 'canvas[aria-label="2D sine graph preview"]');
       assertPixelVariety(parametricSamples, `${viewport.name} parametric curve`);
@@ -401,7 +410,7 @@ async function main() {
       }
 
       await page.getByRole('button', { name: 'Load Eigen Transform template' }).click();
-      await page.getByText('Linear transform mode').waitFor();
+      await page.getByText('Linear transform mode', { exact: true }).waitFor();
       await page.waitForTimeout(300);
       const linearSamples = await sampleCanvas(page, 'canvas[aria-label="2D sine graph preview"]');
       assertPixelVariety(linearSamples, `${viewport.name} linear transform`);
@@ -418,7 +427,7 @@ async function main() {
       }
 
       await page.getByRole('button', { name: 'Load Phase Portrait template' }).click();
-      await page.getByText('Vector field mode').waitFor();
+      await page.getByText('Vector field mode', { exact: true }).waitFor();
       await page.waitForTimeout(300);
       const vectorSamples = await sampleCanvas(page, 'canvas[aria-label="2D sine graph preview"]');
       assertPixelVariety(vectorSamples, `${viewport.name} vector field`);

@@ -130,6 +130,8 @@
           ? { ok: true, message: 'Linear transform mode' }
       : validateExpression(activeScene.expression);
   $: surfaceExpressionStatus = validateSurfaceExpression(activeScene.surfaceExpression);
+  $: graphEquationValue = selectedPanel === '3D' ? activeScene.surfaceExpression : activeScene.expression;
+  $: graphEquationStatus = selectedPanel === '3D' ? surfaceExpressionStatus : expressionStatus;
   $: exportSettings = project.exportSettings;
 
   function setParameter(name: ParameterName, value: number) {
@@ -682,6 +684,30 @@
     }));
   }
 
+  function setGraphEquation(value: string) {
+    if (isSurfaceEquation(value)) {
+      setSurfaceExpression(value);
+      projectStatus = 'Rendering 3D surface equation';
+      return;
+    }
+
+    selectedPanel = '2D';
+    setExpression(value);
+    projectStatus = 'Rendering 2D graph equation';
+  }
+
+  function isSurfaceEquation(value: string): boolean {
+    const normalized = value.toLowerCase();
+    return (
+      normalized.includes('z(') ||
+      normalized.includes('y') ||
+      normalized.includes('sqrt(x^2+y^2') ||
+      normalized.includes(' r ') ||
+      normalized.includes('sigma') ||
+      normalized.includes('epsilon')
+    );
+  }
+
   function setSurfaceExpression(value: string) {
     selectedPanel = '3D';
     project = updateActiveScene(project, (scene) => ({
@@ -1187,8 +1213,27 @@
 
     <div class="section">
       <h2>Formula Stack</h2>
+      <div class="formula-card graph-equation-card">
+        <div class="formula-card-head">
+          <span class="formula-label">Graph equation</span>
+          <button class="secondary-action compact-action" aria-label="Load black hole halo 3D equation" on:click={useBlackHoleHaloExpression}>
+            Black hole halo
+          </button>
+        </div>
+        <textarea
+          class={`formula-input surface-expression-input ${graphEquationStatus.ok ? '' : 'expression-error'}`}
+          aria-label="Graph equation"
+          rows="3"
+          value={graphEquationValue}
+          on:input={(event) => setGraphEquation(event.currentTarget.value)}
+        ></textarea>
+        <span class={`expression-status ${graphEquationStatus.ok ? 'expression-status-ok' : 'expression-status-error'}`}>
+          {selectedPanel === '3D' ? `3D surface: ${surfaceExpressionStatus.message}` : `2D graph: ${expressionStatus.message}`}
+        </span>
+        <code>2D: a*cos(b*x+phi). 3D: z(x,y)=A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)</code>
+      </div>
       <div class="formula-card">
-        <span class="formula-label">Active expression</span>
+        <span class="formula-label">Display formula LaTeX</span>
         <FormulaMath latex={activeScene.formulaLatex} displayMode />
         <input
           class="formula-input"
@@ -1227,9 +1272,6 @@
       <div class="formula-card expression-card">
         <div class="formula-card-head">
           <span class="formula-label">3D surface z(x,y)</span>
-          <button class="secondary-action compact-action" aria-label="Load black hole halo 3D equation" on:click={useBlackHoleHaloExpression}>
-            Black hole halo
-          </button>
         </div>
         <textarea
           class={`formula-input surface-expression-input ${surfaceExpressionStatus.ok ? '' : 'expression-error'}`}

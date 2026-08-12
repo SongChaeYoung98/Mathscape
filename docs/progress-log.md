@@ -14,6 +14,7 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Solution-step editing supports timeline time, label, LaTeX, narration notes, add-at-playhead, and delete workflows.
 - Native Tauri command layer includes SQLite-backed project library hooks and FFmpeg export bridge hooks.
 - 2D rendering supports sine, Fourier square-wave preview, editable expression plots, parametric curves, vector fields with trajectory tracing, and linear-transform grids with basis vectors and eigen-direction guides.
+- Formula Stack now starts with a single Graph Equation input that routes ordinary `x` expressions to 2D and `z(x,y)`/surface expressions to 3D.
 - 3D rendering supports editable `z(x,y)` surface plots, a black-hole halo starter equation, and 3D parametric curve rendering via a surface/curve render-mode switch.
 - Complex rendering supports quadratic domain coloring and a zeta/eta-series approximation demo with critical-line and zero-marker overlays.
 - Creator-oriented templates currently include:
@@ -94,8 +95,9 @@ Build Mathscape as a desktop-first advanced math visualization and solution-auth
 - Added project-state storage for `surfaceExpression` with legacy project fallback.
 - Extended the expression parser for 3D variables `x`, `y`, `r`, `a/A`, `b/k`, `phi`, plus black-hole halo constants `R`, `sigma`, `M`, and `epsilon`.
 - Added a Formula Stack editor for `z(x,y)` so users can enter custom 3D height-field equations directly.
+- Added a single Graph Equation input above display-only LaTeX fields so users can paste one expression and immediately see either a 2D or 3D graph.
 - Added a one-click black-hole halo starter equation using `A*exp(-((sqrt(x^2+y^2)-R)^2)/(sigma^2))*cos(k*sqrt(x^2+y^2)+phi)-M/sqrt(x^2+y^2+epsilon)`.
-- Added visual-check coverage for loading, rendering, and saving the black-hole halo 3D equation.
+- Added visual-check coverage for typing 2D graph expressions, typing 3D surface expressions, loading the black-hole halo equation, rendering, and saving the result.
 
 ## Verified Commands
 
