@@ -2077,7 +2077,8 @@
     padding: 18px;
     background: #151b22;
     border-right: 1px solid #26313c;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .right-panel {
@@ -2304,6 +2305,7 @@
   .formula-card {
     display: grid;
     gap: 7px;
+    min-width: 0;
     padding: 12px;
     background: #202a34;
     border: 1px solid #354555;
@@ -2323,10 +2325,14 @@
 
   code {
     color: #f4d35e;
+    overflow-wrap: anywhere;
     white-space: normal;
+    word-break: break-word;
   }
 
   .formula-input {
+    width: 100%;
+    min-width: 0;
     min-height: 32px;
     padding: 7px 9px;
     color: #edf2f4;
@@ -2337,8 +2343,13 @@
 
   .surface-expression-input {
     min-height: 72px;
+    overflow-x: hidden;
+    overflow-y: auto;
     line-height: 1.35;
     resize: vertical;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .expression-error {
